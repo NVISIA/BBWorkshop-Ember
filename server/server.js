@@ -28,18 +28,23 @@
 
 var express = require('express');
 var app = express();
+var security = require('./security.js');
 
 var _ = require('underscore');
 
 // connect to the data store needed for this application
-var DB = require('nedb');
+var NEDB = require('nedb');
 var db = {};
-db.restaurants = new DB({
+db.restaurants = new NEDB({
     filename: './server/restaurants.db',
     autoload: true
 });
-db.reservations = new DB({
+db.reservations = new NEDB({
     filename: './server/reservations.db',
+    autoload: true
+});
+db.users = new NEDB({
+    filename: './server/users.db',
     autoload: true
 });
 global.db = db;
@@ -56,63 +61,86 @@ var opts = require('stdio').getopt({
 // verb -> path -> function(s)
 var baseRoutes = {
     'get': {
-        '/': function(req, res) {
-            res.sendfile('/.webapp/index.html');
-        },
+        '/': [security.isAuthenticated, function(req, res) {
+            res.sendfile('./webapp/index.html');
+        }],
         '/index.html': function(req, res) {
             res.redirect('/');
-        }
+        },
+        '/login': function(req, res) {
+            res.sendfile('./webapp/login.html');
+        },
+        '/login.html': function(req, res) {
+            res.redirect('/login');
+        },
+        '/register': function(req, res) {
+            res.sendfile('./webapp/register.html');
+        },
+        '/register.html': function(req, res) {
+            res.redirect('/register');
+        },
+        '/logout': security.logout
+    },
+    'post': {
+        '/login': security.authenticate,
+        '/register': security.register
     }
 };
 var restaurantServiceRoutes = {
     'get': {
-        '/restaurants': restaurantService.getRestaurants,
-        '/restaurants/:id': restaurantService.getRestaurants,
-        '/restaurants/:id/reservations': restaurantService.getReservations
+        '/restaurants': [security.secureService, restaurantService.getRestaurants],
+        '/restaurants/:id': [security.secureService, restaurantService.getRestaurants],
+        '/restaurants/:id/reservations': [security.secureService, restaurantService.getReservations]
     },
     'put': {
-        '/restaurants': restaurantService.saveRestaurant,
-        '/restaurants/:id': restaurantService.saveRestaurant
+        '/restaurants': [security.secureService, restaurantService.saveRestaurant],
+        '/restaurants/:id': [security.secureService, restaurantService.saveRestaurant]
     },
     'post': {
-        '/restaurants': restaurantService.saveRestaurant,
-        '/restaurants/:id': restaurantService.saveRestaurant
+        '/restaurants': [security.secureService, restaurantService.saveRestaurant],
+        '/restaurants/:id': [security.secureService, restaurantService.saveRestaurant]
     },
     'delete': {
-        '/restaurants/:id': restaurantService.deleteRestaurant
+        '/restaurants/:id': [security.secureService, restaurantService.deleteRestaurant]
     }
 };
 var reservationServiceRoutes = {
     'get': {
-        '/reservations/:id': reservationService.getReservations
+        '/reservations/:id': [security.secureService, reservationService.getReservations]
     },
     'put': {
-        '/reservations': reservationService.saveReservation,
-        '/reservations/:id': reservationService.saveReservation
+        '/reservations': [security.secureService, reservationService.saveReservation],
+        '/reservations/:id': [security.secureService, reservationService.saveReservation]
     },
     'post': {
-        '/reservations': reservationService.saveReservation,
-        '/reservations/:id': reservationService.saveReservation
+        '/reservations': [security.secureService, reservationService.saveReservation],
+        '/reservations/:id': [security.secureService, reservationService.saveReservation]
     },
     'delete': {
-        '/reservations/:id': reservationService.deleteReservation
+        '/reservations/:id': [security.secureService, reservationService.deleteReservation]
     }
 };
 
 app.use(express.bodyParser());
-app.use(express.static(__dirname + '/../webapp'));
+app.use(express.cookieParser());
+app.use(express.session({
+    key: 'NSESSIONID',
+    secret: 'abracadabra'
+}));
 
 // add all of the routes to the application
 var addRoutes = function(routes) {
     _.each(routes, function (paths, verb) {
-        _.each(paths, function(fn, path) {
-            app[verb](path, fn);
+        _.each(paths, function(handlers, path) {
+            app[verb](path, handlers);
         });
     });
 };
 addRoutes(baseRoutes);
 addRoutes(restaurantServiceRoutes);
 addRoutes(reservationServiceRoutes);
+
+app.use(express.static(__dirname + '/../webapp'));
 
 // enable a database reset with a get request
 app.get('/reset', function(req, res) {

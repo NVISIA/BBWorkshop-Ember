@@ -2,5 +2,6 @@ node_modules/
 webapp/js/precompiled-templates.js
 server/restaurants.db
 server/reservations.db
+server/users.db
 .idea/
 *.iml

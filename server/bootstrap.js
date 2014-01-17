@@ -40,6 +40,10 @@ if (!db) {
         filename: './server/reservations.db',
         autoload: true
     });
+    db.users = new DB({
+        filename: './server/users.db',
+        autoload: true
+    });
 }
 
 var Restaurant = require('./dao.js').Restaurant;
@@ -128,11 +132,13 @@ var restaurants = [
 
 
 var reset = function() {
+    db.users.remove({}, { multi: true });
     db.restaurants.remove({}, { multi: true });
     db.reservations.remove({}, { multi: true });
 
     db.restaurants.insert(restaurants);
 
+    db.users.persistence.compactDatafile();
     db.restaurants.persistence.compactDatafile();
     db.reservations.persistence.compactDatafile();
 }

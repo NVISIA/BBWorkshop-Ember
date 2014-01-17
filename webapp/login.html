@@ -56,38 +56,43 @@
 
                 <p class="title-sub">Simply choose a restaurant, a time, and submit your reservation!</p>
             </div>
+            <div class="panel" style="text-align">
+                <form action="login" method="POST">
+                    <div class="row">
+                        <div class="large-6 columns">
+                            <label>User</label>
+                            <input type="text" name="user"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-6 columns">
+                            <label>Password</label>
+                            <input type="password" name="password" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-6 columns">
+                            <button type="submit" class="small radius button">Login</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-6 columns">
+                            <a href="/register">Not registered?  Register here!</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-<div class="row">
-    <div id="restaurant-list-main" class="large-8 medium-8 columns"></div>
-    <div id="selected-restaurant-main" class="large-8 medium-8 columns" style="display: none;"></div>
-    <div id="show-reservation-main" class="large-8 medium-8 columns" style="display: none;"></div>
-
-
-    <div class="large-4 medium-4 columns">
-        <div class="panel">
-            <h5>Welcome Back!</h5>
-
-            <a href="/logout" class="small button">Logout</a>
-        </div>
-        <div class="panel">
-            <h5>There is so much more!</h5>
-
-            <p>This is but one example with Backbone, there is so much more possible!</p>
-            <a href="http://backbonejs.org/#Events" class="small button">Go to Backbone.js Docs</a>
-        </div>
-    </div>
-</div>
 
     <link rel="stylesheet" href="css/foundation.css"/>
     <script type="text/javascript" src="libs/modernizr.js"></script>
     <script type="text/javascript" src="libs/foundation.min.js"></script>
-<script>
-    $(document).ready( function() {
-        $(document).foundation();
-    });
-</script>
+    <script>
+        $(document).ready( function() {
+            $(document).foundation();
+        });
+    </script>
 
 </body>
 </html>
