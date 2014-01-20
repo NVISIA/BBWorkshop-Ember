@@ -29,7 +29,7 @@
 var _ = require('underscore');
 var crypto = require('crypto');
 
-var hash = function(clear) {
+var _hash = function(clear) {
     return crypto.createHash('md5').update(clear).digest('hex');
 };
 
@@ -44,7 +44,7 @@ exports.isAuthenticated = function(req, res, next) {
 exports.authenticate = function(req, res, next) {
     var user = req.body.user;
     var pass = req.body.password;
-    var hash = hash(pass);
+    var hash = _hash(pass);
     db.users.findOne({ user: user }, function(err, doc) {
         if (doc && doc.pass === hash) {
             req.session.authenticated = true;
@@ -76,7 +76,7 @@ exports.register = function(req, res, next) {
 
     db.users.insert({
         user: user,
-        pass: hash(pass),
+        pass: _hash(pass),
         email: email
     }, function() {
         req.session.authenticated = true;
