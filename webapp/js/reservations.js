@@ -80,7 +80,7 @@
             Backbone.Validation.bind(this);
         },
         render: function () {
-            this.$el.html(this.template(this.model.toJSON()));
+            this.$el.html(this.template(_.extend(this.model.toJSON(), Application.getUser())));
             return this;
         },
         changeGenericValue: function (event) {

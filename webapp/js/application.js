@@ -29,7 +29,10 @@
 (function(){
     "use strict";
 
-    $(document).ready(function(){
+    var app = {};
+    window.Application = app;
+
+    $(document).ready(function() {
         var allRestaurantView = new RestaurantModule.RestaurantListView();
 
         var allRestaurantContent = $("#restaurant-list-main");
@@ -45,7 +48,6 @@
                 "restaurant/:id": "selectRestaurant",
                 "reservation/:id":"showReservationResult"
             },
-
             showRestaurants :function() {
                 allRestaurantContent.show();
                 singleRestaurantContent.hide();
@@ -76,6 +78,21 @@
             Backbone.history.start();
         });
     });
+
+    var user = {};
+
+console.log('getting who');
+    $.ajax('/who', {
+        success: function(response) {
+console.log('got who');
+            user.name = response.user;
+            user.email = response.email;
+        }
+    });
+
+    app.getUser = function() {
+        return _.clone(user);
+    };
 
     // Extend backbone to find our error-box and show errors.
     _.extend(Backbone.Validation.callbacks, {

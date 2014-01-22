@@ -27,6 +27,9 @@
  */
 
 var express = require('express');
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
 var app = express();
 var security = require('./security.js');
 
@@ -61,12 +64,12 @@ var opts = require('stdio').getopt({
 // verb -> path -> function(s)
 var baseRoutes = {
     'get': {
-        '/': [security.isAuthenticated, function(req, res) {
+        '/': [security.secureStatic, function(req, res) {
             res.sendfile('./webapp/index.html');
         }],
-        '/index.html': function(req, res) {
+        '/index.html': [security.secureStatic, function(req, res) {
             res.redirect('/');
-        },
+        }],
         '/login': function(req, res) {
             res.sendfile('./webapp/login.html');
         },
@@ -79,6 +82,7 @@ var baseRoutes = {
         '/register.html': function(req, res) {
             res.redirect('/register');
         },
+        '/who': [security.secureService, security.who],
         '/logout': security.logout
     },
     'post': {
@@ -150,10 +154,20 @@ app.get('/reset', function(req, res) {
 });
 
 // start the server
-var port = opts.port;
-if (port === undefined) {
-    console.log('Port not specified.  Defaulting to 9000');
-    port = 9000;
-}
-app.listen(port);
-console.log('Listening on port ' + port);
+var port = (opts.port || 9000) * 1;
+var securePort = port + 1;
+
+http.createServer(function(req, res) {
+    // redirect to secure server
+    var url = 'https://' + req.headers.host.split(':')[0] + ':' + securePort + req.url;
+    res.writeHead(301, {
+        Location: url
+    });
+    res.end();
+}).listen(port);
+https.createServer({
+    key: fs.readFileSync('server/rsa.pem'),
+    cert: fs.readFileSync('server/cert.pem')
+}, app).listen(securePort);
+
+console.log('Listening on ports ' + port + ' and ' + securePort);

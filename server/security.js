@@ -33,7 +33,7 @@ var _hash = function(clear) {
     return crypto.createHash('md5').update(clear).digest('hex');
 };
 
-exports.isAuthenticated = function(req, res, next) {
+exports.secureStatic = function(req, res, next) {
     if (!req.session.authenticated) {
         res.redirect('/login');
     } else {
@@ -48,9 +48,16 @@ exports.authenticate = function(req, res, next) {
     db.users.findOne({ user: user }, function(err, doc) {
         if (doc && doc.pass === hash) {
             req.session.authenticated = true;
-            res.redirect('/');
+            req.session.user = user;
+            req.session.email = doc.email;
+            res.send({
+                success: true
+            });
         } else {
-            res.redirect('/login?error=Invalid User/Password');
+            res.send({
+                success: false,
+                errors: ['Invalid User/Password']
+            });
         }
     });
 };
@@ -59,28 +66,39 @@ exports.register = function(req, res, next) {
     var user = req.body.user;
     var pass = req.body.password;
     var email = req.body.email;
+    var errors = [];
 
     if (user === undefined || user === "") {
-        res.redirect('/register?error=User name is required');
+        errors.push('User name is required');
     }
 
     if (pass === undefined || pass === "") {
-        res.redirect('/register?error=Password is required');
+        errors.push('Password is required');
     }
 
     db.users.findOne({ user: user }, function(err, doc) {
         if (doc) {
-            res.redirect('/register?error=User name is already in use');
+            errors.push('User name is already in use');
         }
-    });
-
-    db.users.insert({
-        user: user,
-        pass: _hash(pass),
-        email: email
-    }, function() {
-        req.session.authenticated = true;
-        res.redirect('/');
+        if (errors.length > 0) {
+            res.send({
+                success: false,
+                errors: errors
+            });
+        } else {
+            db.users.insert({
+                user: user,
+                pass: _hash(pass),
+                email: email
+            }, function() {
+                req.session.authenticated = true;
+                req.session.user = user;
+                req.session.email = email;
+                res.send({
+                    success: true
+                });
+            });
+        }
     });
 };
 
@@ -91,6 +109,13 @@ exports.secureService = function(req, res, next) {
     } else {
         next();
     }
+};
+
+exports.who = function(req, res) {
+    res.send({
+        user: req.session.user,
+        email: req.session.email
+    })
 };
 
 exports.logout = function(req, res, next) {
