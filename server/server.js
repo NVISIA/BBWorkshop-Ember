@@ -31,7 +31,26 @@ var https = require('https');
 var http = require('http');
 var fs = require('fs');
 var app = express();
-var security = require('./security.js');
+
+// parse command line options
+var opts = require('stdio').getopt({
+    'port': {key: 'p', args: 1, description: 'HTTP Listener Bind Port'},
+    'secure': {key: 's', description: 'Enable SSL and Security'}
+});
+
+var security;
+if (opts.security === true) {
+    security = require('./security.js');
+} else {
+    security = {
+        authenticate: function(rq,rs,nxt) { rs.send('not enabled'); },
+        register: function(rq,rs,nxt) { rs.send('not enabled'); },
+        logout: function(rq,rs,nxt) { rs.send('not enabled'); },
+        who: function(rq,rs,nxt) { rs.send({user:'User'}); },
+        secureStatic: function(rq,rs,nxt) { nxt(); },
+        secureService: function(rq,rs,nxt) { nxt(); }
+    }
+}
 
 var _ = require('underscore');
 
@@ -54,11 +73,6 @@ global.db = db;
 
 var restaurantService = require('./restaurantService.js');
 var reservationService = require('./reservationService.js');
-
-// parse command line options
-var opts = require('stdio').getopt({
-    'port': {key: 'p', args: 1, description: 'HTTP Listener Bind Port'}
-});
 
 // application routes
 // verb -> path -> function(s)
@@ -155,19 +169,25 @@ app.get('/reset', function(req, res) {
 
 // start the server
 var port = (opts.port || 9000) * 1;
-var securePort = port + 1;
 
-http.createServer(function(req, res) {
-    // redirect to secure server
-    var url = 'https://' + req.headers.host.split(':')[0] + ':' + securePort + req.url;
-    res.writeHead(301, {
-        Location: url
-    });
-    res.end();
-}).listen(port);
-https.createServer({
-    key: fs.readFileSync('server/rsa.pem'),
-    cert: fs.readFileSync('server/cert.pem')
-}, app).listen(securePort);
-
-console.log('Listening on ports ' + port + ' and ' + securePort);
+if (opts.security === true) {
+    var securePort = port + 1;
+    
+    http.createServer(function(req, res) {
+        // redirect to secure server
+        var url = 'https://' + req.headers.host.split(':')[0] + ':' + securePort + req.url;
+        res.writeHead(301, {
+            Location: url
+        });
+        res.end();
+    }).listen(port);
+    https.createServer({
+        key: fs.readFileSync('server/rsa.pem'),
+        cert: fs.readFileSync('server/cert.pem')
+    }, app).listen(securePort);
+    
+    console.log('Listening on ports ' + port + ' and ' + securePort);
+} else {
+    app.listen(port);
+    console.log('Listening on port ' + port);
+}

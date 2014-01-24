@@ -8,8 +8,8 @@ if not exist server/restaurants.db (
     call reset.bat
 )
 
-rem precompile handlebars templates
-call node node_modules/handlebars/bin/handlebars webapp/template -f webapp/js/precompiled-templates.js
-
 rem startup the node server
 call node server/server --port 9000
+
+rem Use this command instead to run in secure mode
+rem node server/server --port 9000 -s

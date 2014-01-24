@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 /**
- * jgitter 1-13-2014
+ * jgitter 1-24-2014
  */
  (function() {
     "use strict";
 
-    Handlebars.registerHelper('showPrice', function(price) {
+    Ember.Handlebars.helper('showPrice', function(price) {
         var index, out = "";
         for (index = 1; index <= price; index++) {
             out += "$";
@@ -36,7 +36,7 @@
         return out;
     });
 
-    Handlebars.registerHelper('showRating', function(rating) {
+    Ember.Handlebars.helper('showRating', function(rating) {
         var index, out = "";
         for (index = 1; index <= Math.round(rating / 20); index++) {
             out += "*";
@@ -45,9 +45,10 @@
         return out;
     });
 
-    Handlebars.registerHelper('showTime', function(millis) {
+    Ember.Handlebars.helper('showTime', function(millis) {
         var date = new Date(1 * millis);
         var str = date.toLocaleTimeString("en-US");
-        return str.substring(0, 5) + str.substring(8,11);
+        var arr = str.split(/[ :]/);
+        return arr[0] + ":" + arr[1] + " " + arr[arr.length - 1];
     });
 })();

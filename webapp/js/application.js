@@ -23,94 +23,38 @@
  */
 
 /**
- * Created by bpeterson on 1/9/14.
+ * jgitter 1/24/14.
  */
 
-(function(){
+(function() {
     "use strict";
 
-    var app = {};
+    // Create the applicaton and expose it globally
+    var app = Ember.Application.create();
     window.Application = app;
 
-    $(document).ready(function() {
-        var allRestaurantView = new RestaurantModule.RestaurantListView();
-
-        var allRestaurantContent = $("#restaurant-list-main");
-        var singleRestaurantContent = $("#selected-restaurant-main");
-        var reservationResultContent = $("#show-reservation-main");
-
-        allRestaurantContent.empty();
-        allRestaurantContent.append(allRestaurantView.render().el);
-
-        new (Backbone.Router.extend({
-            routes: {
-                "":"showRestaurants",
-                "restaurant/:id": "selectRestaurant",
-                "reservation/:id":"showReservationResult"
-            },
-            showRestaurants :function() {
-                allRestaurantContent.show();
-                singleRestaurantContent.hide();
-                reservationResultContent.hide();
-            },
-            selectRestaurant: function(id) {
-                var selected = allRestaurantView.getRestaurantById(id);
-                var singleRestaurantView = new RestaurantModule.RestaurantView({model:selected});
-                singleRestaurantContent.empty().append(singleRestaurantView.el);
-                singleRestaurantView.showTimes();
-
-                allRestaurantContent.hide();
-                reservationResultContent.hide();
-                singleRestaurantContent.show();
-            },
-            showReservationResult:function(id){
-                var reservationView = new Reservation.View();
-                reservationResultContent.empty().append(reservationView.el);
-                reservationView.fetchReservation(id);
-                
-                allRestaurantContent.hide();
-                singleRestaurantContent.hide();
-                reservationResultContent.show();
-            }
-        }))();
-
-        allRestaurantView.on('ready', function() {
-            Backbone.history.start();
+    // Add routes to the application
+    app.Router.map(function() {
+        this.resource('index', { path: '/' });
+        this.resource('restaurant', { path: '/restaurant/:id' }, function() {
+            this.resource('reservationForm', { path: '/:time' });
         });
+        this.resource('reservation', { path: '/reservation/:id' });
     });
-
-    var user = {};
-
-console.log('getting who');
-    $.ajax('/who', {
-        success: function(response) {
-console.log('got who');
-            user.name = response.user;
-            user.email = response.email;
+    
+    // Create an explicit IndexRoute and specify a method for retrieving the model
+    // which in this case is a collection of restaurant models
+    app.IndexRoute = Ember.Route.extend({
+        model: function() {
+            return this.store.find('restaurant');
         }
     });
 
-    app.getUser = function() {
-        return _.clone(user);
-    };
-
-    // Extend backbone to find our error-box and show errors.
-    _.extend(Backbone.Validation.callbacks, {
-        valid: function (view, attr, selector) {
-            view.$('[' + selector + '=' + attr + ']').removeClass('invalid');
-            // remove from the list; and if empty; hide it.
-            view.$('.error-box').find('li[name=' + attr + ']').remove();
-            if (view.$('.error-box').find('ul li').length == 0) {
-                view.$('.error-box').hide();
-            }
+    // By default, Ember uses the Json API laid out at http://jsonapi.org/
+    // Our server doesn't follow that model, so overriding to do simple JSON serialization
+    Application.ApplicationSerializer = DS.JSONSerializer.extend({
+        serializeIntoHash: function(hash, type, record, options) {
+            _.extend(hash, this.serialize(record, options));
         },
-        invalid: function (view, attr, error, selector) {
-            view.$('[' + selector + '=' + attr + ']').addClass('invalid');
-            // show container, add to list (with name!).
-            view.$('.error-box').find('li[name=' + attr + ']').remove();
-            view.$('.error-box').show().find('.error-list').append(
-                '<li name="' + attr + '">' + error + '</li>');
-        }
     });
-
 })();

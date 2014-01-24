@@ -27,10 +27,12 @@
 (function() {
     "use strict";
 
+    var store = Application.__container__.lookup('store:main');
+
     module("Reservation Module");
 
     var getReservation = function() {
-        return new Reservation.Model({
+        store.create('reservation', {
             id: 'abc123',
             restaurantId: 'zyx987',
             name: 'Jerry Rice',

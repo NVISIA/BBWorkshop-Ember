@@ -21,152 +21,116 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 /**
- * jgitter 1-10-2014
+ * jgitter 1/24/14.
  */
 (function () {
     "use strict";
 
-    var Reservation = {};
-    window.Reservation = Reservation;
+    Application.Reservation = DS.Model.extend({
+        _id: DS.attr('string'),
+        restaurantId: DS.attr('string'),
+        name: DS.attr('string'),
+        phone: DS.attr('string'),
+        guests: DS.attr('number'),
+        time: DS.attr('number'),
+        created: DS.attr('number'),
 
-    Reservation.Model = Backbone.Model.extend({
-        urlRoot: "/reservations",
+        // not from server - not DS.attr
+        restaurantName: "",
+
+        // Vlad!
         validation: {
-            name: {
-                required: true,
-                minLength: 2,
-                msg: "Please enter a valid first name"
+            name: function(value) {
+                if (value === null || value === undefined || value.length < 2) {
+                    return "Name is required and must be at least 2 characters"
+                }
             },
-            phone: {
-                required: true,
-                fn: function (value) {
-                    if (value !== undefined) {
-                        var check = value.replace(/[\s\(\)]/g, '');
-                        if (check.match(/^1?-?(\d{3})?-?\d{3}-?\d{4}$/) === null) {
-                            return "Please enter a valid phone number"
-                        }
+            phone: function (value) {
+                if (value === null || value === undefined || value === "") {
+                    return "Phone number is required"
+                } else {
+                    var check = value.replace(/[\s\(\)]/g, '');
+                    if (check.match(/^1?-?(\d{3})?-?\d{3}-?\d{4}$/) === null) {
+                        return "Please enter a valid phone number"
                     }
                 }
             },
-            guests: {
-                required: true,
-                pattern: 'digits',
-                range: [1, 10]
+            guests: function(value) {
+                if (value === null || value === undefined || value === "") {
+                    return "Number of guests is required";
+                } else {
+                    var integer;
+                    try {
+                        integer = parseInt(value);
+                        if (integer < 1 || integer > 10) {
+                            return "Number of guests must be between 1 and 10, inclusive";
+                        }
+                    } catch (ex) {
+                        return "Number of guests must be an integer";
+                    }
+                }
             },
-            time: {
-                required: true
+            time: function(value) {
+                if (value === null || value === undefined || value === "") {
+                    return "Reservation time is required";
+                }
             }
         }
     });
 
-    Reservation.FormView = Backbone.View.extend({
-        events: {
-            'change input[type="text"]': 'changeGenericValue',
-            'change input[type="number"]': 'changeGenericValue',
-            'change select': 'changeGenericValue',
-            "keypress input[type='text']": 'actOnEnter',
-            "keypress input[type='number']": 'actOnEnter',
-            'click .submitButton': 'submitReservationRequest',
-            'click .cancelButton': 'cancelReservationRequest'
-        },
-        initialize: function (options) {
-            this.template = Handlebars.templates.reservationForm;
-            this.model = new Reservation.Model({
-                restaurantId: options.restaurantId,
-                time: options.reservationTime
+    // Route for the reservation form
+    Application.ReservationFormRoute = Ember.Route.extend({
+        // return a brand new reservation model
+        model: function(params) {
+            // grab the restaurant model for the currently active restaurant
+            // so that I can get at the restaurant id.
+            var restaurant = this.modelFor('restaurant');
+            return this.store.createRecord('reservation', {
+                time: params.time,
+                restaurantId: restaurant.get('id')
             });
-
-            Backbone.Validation.bind(this);
         },
-        render: function () {
-            this.$el.html(this.template(_.extend(this.model.toJSON(), Application.getUser())));
-            return this;
-        },
-        changeGenericValue: function (event) {
-            var sValue = $(event.currentTarget).val();
-            var sName = $(event.currentTarget).attr("name");
-
-            // Update the model but don't cause any change event.
-            this.model.set(sName, sValue, { silent: true });
-        },
-        actOnEnter: function (event) {
-            if (event.keyCode != 13) {
-                return;
+        actions: {
+            // save the reservation model on submit
+            submit: function(reservation) {
+                 if (Vlad.validate(reservation)) {
+                    reservation.save().then(_.bind(function(reservation) {
+                        this.transitionTo('reservation', reservation);
+                    }, this));
+                 }
+            },
+            // route back to the parent to close the form (causes re-render to remove form!)
+            cancel: function() {
+                this.transitionTo('restaurant', this.modelFor('restaurant'));
             }
+        }
+    });
 
-            // Prevent default enter behavior.
-            event.preventDefault();
-
-            // Make the update to the value as a result of the Enter.
-            this.changeGenericValue(event);
+    Application.ReservationRoute = Ember.Route.extend({
+        model: function(params) {
+            return this.store.find('reservation', params.id);
         },
-        submitReservationRequest: function () {
-            var validationResults = this.model.validate();
-            if (this.model.isValid()) {
-                this.model.save(null, {
-                    success: function (model, response, options) {
-                        console.log("SUCCESS");
-                        Backbone.history.navigate("reservation/" + model.id, { trigger:true });
-                    },
-                    error: function (model, xhr, options) {
-                        console.log("Snap goes the request.");
-                    }
+        afterModel: function(reservation) {
+            this.store.find('restaurant', reservation.get('restaurantId'));
+        },
+        setupController: function(controller, reservation) {
+            this._super.apply(this, arguments);
+
+            // if the page was reloaded, or loaded from a bookmark, the parent controller won't
+            // have a reference to the model we need - load it here
+            if (!controller.get('restaurant').get('model')) {
+                this.store.find('restaurant', reservation.get('restaurantId')).then(function(restaurant) {
+                    controller.get('restaurant').set('model', restaurant);
                 });
             }
-            return false;
-        },
-        cancelReservationRequest: function () {
-            this.remove();
-            return false;
         }
     });
 
-    Reservation.View = Backbone.View.extend({
-        events:{
-            'click .reset':'closeReservationView'
-        },
-        initialize: function () {
-            this.template = Handlebars.templates.reservation;
-            this.model = new Reservation.Model();
-            this.restaurant = new RestaurantModule.Restaurant();
-
-            this.listenTo(this.model,"sync",this.fetchRestaurant);
-            this.listenTo(this.model,"change",this.render);
-            _.bindAll(this,"fetchRestaurantSuccess");
-            _.bindAll(this,"fetchReservationSuccess");
-        },
-        render: function () {
-            this.$el.html(this.template(this.model.toJSON()));
-            return this;
-        },
-        closeReservationView:function(){
-            Backbone.history.navigate("", { trigger: true });
-        },
-        fetchRestaurant:function(){
-            this.restaurant.set({id:this.model.get("restaurantId")},{silent:true});
-            this.restaurant.fetch({
-                success: this.fetchRestaurantSuccess,
-                error: function (model, xhr, options) {
-                    console.log("Snap goes the request.");
-                }
-            });
-        },
-        fetchRestaurantSuccess:function(model, response, options) {
-            this.model.set({restaurantName:model.get('name')});
-        },
-        fetchReservationSuccess:function(model, response, options) {
-            this.restaurant.set({id:model.get("restaurantId")});
-        },
-        fetchReservation:function(reservationId){
-            this.model.set({id:reservationId},{silent:true});
-            this.model.fetch({
-                    success: this.fetchReservationSuccess,
-                    error: function (model, xhr, options) {
-                        console.log("Snap goes the request.");
-                    }
-                }
-            );
-        }
+    // Create the Reservation controller explicitly so I can "need" the Restaurant controller
+    Application.ReservationController = Ember.ObjectController.extend({
+        needs: "restaurant",
+        restaurant: Ember.computed.alias('controllers.restaurant')
     });
 })();

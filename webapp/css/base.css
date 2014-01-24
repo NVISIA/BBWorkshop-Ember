@@ -17,6 +17,10 @@ body.restaurant {
 
 .error-box {
     color: red;
+    border: 2px solid red;
+    background: yellow;
+    font-size: 1.2em;
+    padding-top: 15px;
 }
 
 .error-box ul {
@@ -28,4 +32,12 @@ input[type="number"].invalid {
     border: 2px solid red;
     background: yellow;
     font-size: 1.1em;
+}
+
+a.white {
+    color:white;
+}
+
+.callout.panel a.white {
+    color: white;
 }

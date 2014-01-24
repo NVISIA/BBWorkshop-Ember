@@ -23,139 +23,42 @@
  */
 
 /**
- * Created by bpeterson on 1/9/14.
+ * jgitter 1/24/14.
  */
 
 (function () {
     "use strict";
+    
+    Application.Restaurant = DS.Model.extend({
+        _id: DS.attr('string'),
+        name: DS.attr('string'),
+        cuisine: DS.attr('string'),
+        tagline: DS.attr('string'),
+        description: DS.attr('string'),
+        address: DS.attr('string'),
+        rating: DS.attr('number'),
+        price: DS.attr('number')
+    });
 
-    var RestaurantModule = {};
-    window.RestaurantModule = RestaurantModule;
-
-    /**
-     * Model to define a Restaurant
-     * @type {*|void}
-     */
-    RestaurantModule.Restaurant = Backbone.Model.extend({
-        defaults: {
-            name: "undefined",
-            location: "",
-            reservations: [],
-            availableTimes: [],
-            selected: false
+    // Route for the Restaurant
+    Application.RestaurantRoute = Ember.Route.extend({
+        // Grab the restaurant of this id from the store (cache or server)
+        model: function(params) {
+            return this.store.find('restaurant', params.id);
         },
-        urlRoot: "/restaurants",
-        fetchReservations: function () {
-            $.ajax('/restaurants/' + this.get('id') + '/reservations', {
-                context: this,
-                success: function (response) {
-                    this.set({
-                        'reservations': response.reservations,
-                        'availableTimes': response.available
-                    });
-                    this.trigger('fetchComplete');
-                },
-                failure: function () {
-                    console.log(['Something strange is afoot', arguments]);
+        // after the model is loaded, I need to get the current reservations and remaining
+        // available times.  Setting them on the model triggers a re-render of the template.
+        afterModel: function(restaurant) {
+            $.ajax('/restaurants/' + restaurant.get('_id') + '/reservations', {
+                success: function(response) {
+                    restaurant.set('reservations', response.reservations);
+                    restaurant.set('availableTimes', response.available);
                 }
             });
         }
     });
 
-    /**
-     * View to Render a single Restaurant.
-     * @type {*|void}
-     */
-    RestaurantModule.RestaurantView = Backbone.View.extend({
-        defaults: {
-            formView: undefined,
-            selected:false
-        },
-        events: {
-            'click .availableTime': 'selectTime'
-        },
-        initialize: function () {
-            this.template = Handlebars.templates.restaurant;
-            this.listenTo(this.model, 'fetchComplete', this.render);
-        },
-        render: function () {
-            if (this.formView) {
-                this.$el.find('.reservationForm').detach();
-                this.formView=undefined;
-            }
-
-            this.$el.html(this.template(this.model.toJSON()));
-            if (this.selected){
-                this.$el.find(".availableTimes").html(this.availableTimes.render().el);
-            }
-            return this;
-        },
-        showTimes: function(){
-            this.selected=true;
-            this.availableTimes = new RestaurantModule.TimeSlotView({model:this.model});
-            this.model.fetchReservations();
-        },
-        selectTime: function (event) {
-            var reservationTime = parseInt(event.currentTarget.getAttribute('value'));
-            var view = new Reservation.FormView({restaurantId: this.model.get('id'), reservationTime: reservationTime});
-            this.formView = view;
-            this.$('.reservationForm').empty().append(view.render().el);
-        }
-    });
-
-    /**
-     * Main View to Manage the Restaurant List for Reservations.
-     * This view contains subviews in order to allow tighter control.
-     * @type {*|void}
-     */
-    RestaurantModule.RestaurantListView = Backbone.View.extend({
-        initialize: function () {
-            this.template = Handlebars.templates.restaurantListView;
-            this.restaurants = new RestaurantModule.RestaurantList();
-            this.listenTo(this.restaurants, "add", this.addRestaurantView);
-
-            _.bindAll(this, "fireReadyEvent");
-            this.restaurants.fetch({
-                success: this.fireReadyEvent
-            });
-        },
-        render: function () {
-            this.$el.html(this.template(this));
-            return this;
-        },
-        addRestaurantView: function (restaurant) {
-            var view = new RestaurantModule.RestaurantView({model: restaurant});
-            this.$('.restaurantList').append(view.render().el);
-        },
-        count: function () {
-            return this.restaurants.length;
-        },
-        fireReadyEvent: function () {
-            this.trigger('ready');
-        },
-        getRestaurantById:function(id){
-            return this.restaurants.get(id);
-        }
-    });
-
-    /**
-     * Collection of Restaurant models.
-     * @type {*|void}
-     */
-    RestaurantModule.RestaurantList = Backbone.Collection.extend({
-        model: RestaurantModule.Restaurant,
-        url: "/restaurants"
-    });
-
-    RestaurantModule.TimeSlotView = Backbone.View.extend({
-        initialize:function(options){
-            this.template = Handlebars.templates.availableTimes;
-        },
-        render:function(){
-            this.$el.html(this.template(this.model.toJSON()));
-            return this;
-        }
-    });
-
-    return RestaurantModule;
+    // Since this controller is "needed" by the ReservationController, I had
+    // to explicitly create this class in case that page was loaded directly
+    Application.RestaurantController = Ember.ObjectController.extend({});
 })();
