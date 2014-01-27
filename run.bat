@@ -8,6 +8,9 @@ if not exist server/restaurants.db (
     call reset.bat
 )
 
+rem Precompile the ember templates
+node node_modules/grunt-cli/bin/grunt
+
 rem startup the node server
 call node server/server --port 9000
 
