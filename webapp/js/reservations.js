@@ -125,6 +125,11 @@
                     controller.get('restaurant').set('model', restaurant);
                 });
             }
+        },
+        actions: {
+            reset: function() {
+                this.transitionTo('/');
+            }
         }
     });
 

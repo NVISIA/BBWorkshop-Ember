@@ -7,7 +7,7 @@ sudo npm install
 [ ! -f server/restaurants.db ] && ./reset.sh
 
 # startup the node server
-node server/server --port 9000
+# node server/server --port 9000
 
 # Use this command instead to run in secure mode
-#node server/server --port 9000 -s
+node server/server --port 9000 -s

@@ -39,7 +39,7 @@ var opts = require('stdio').getopt({
 });
 
 var security;
-if (opts.security === true) {
+if (opts.secure === true) {
     security = require('./security.js');
 } else {
     security = {
@@ -170,7 +170,7 @@ app.get('/reset', function(req, res) {
 // start the server
 var port = (opts.port || 9000) * 1;
 
-if (opts.security === true) {
+if (opts.secure === true) {
     var securePort = port + 1;
     
     http.createServer(function(req, res) {
