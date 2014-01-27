@@ -1,8 +1,8 @@
-BackboneWorkshop
+EmberWorkshop
 ================
 
-Backbone.js Workshop
-The Backbone.js Workshop is intended to be released under the MIT license.
+Ember.js Workshop
+The Ember.js Workshop is intended to be released under the MIT license.
 
 The MIT License (MIT)
 
