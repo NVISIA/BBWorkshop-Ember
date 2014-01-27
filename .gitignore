@@ -1,5 +1,5 @@
 node_modules/
-webapp/js/precompiled-templates.js
+webapp/js/precompiled_templates.js
 server/restaurants.db
 server/reservations.db
 server/users.db
