@@ -1,0 +1,24 @@
+<div class="restaurant-list">
+    {{#each}}
+    <div class="row">
+        <div class="large-12 columns">
+            <div class="callout panel radius">
+                <p><strong>{{name}}</strong>{{#if tagline}}<br/>{{/if}}{{tagline}}</p>
+                <div class="row">
+                    <div class="large-3 medium-6 small-12 columns">
+                        <p>Price: {{showPrice price}}</p>
+                    </div>
+                    <div class="large-3 medium-6 small-12 columns">
+                        <p>Rating: {{showRating rating}}</p>
+                    </div>
+                    <div class="large-6 medium-12 small-12 columns">
+                        <p>Address: {{address}}</p>
+                    </div>
+                </div>
+                <p>Description: {{description}} </p>
+                {{#link-to 'restaurant' this class="button restaurantRow white"}}ShowTimes{{/link-to}}
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</div>

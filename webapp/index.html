@@ -35,6 +35,7 @@
     <script type="text/javascript" src="libs/handlebars-v1.3.0.js"></script>
     <script type="text/javascript" src="libs/ember-1.3.0.js"></script>
     <script type="text/javascript" src="libs/ember-data.js"></script>
+    <script type="text/javascript" src="js/precompiled_templates.js"></script>
     <script type="text/javascript" src="js/handlebars-helpers.js"></script>
     <script type="text/javascript" src="js/application.js"></script>
     <script type="text/javascript" src="js/restaurant.js"></script>
@@ -61,171 +62,16 @@
             <div class="large-8 medium-8 columns">{{outlet}}</div>
 
             <div class="large-4 medium-4 columns">
-                <div class="panel">
+                <div class="panel radius">
                     <h5>Welcome Back!</h5>
 
                     <a href="/logout" class="small button">Logout</a>
                 </div>
-                <div class="panel">
+                <div class="panel radius">
                     <h5>There is so much more!</h5>
 
-                    <p>This is but one example with Backbone, there is so much more possible!</p>
-                    <a href="http://backbonejs.org/#Events" class="small button">Go to Backbone.js Docs</a>
-                </div>
-            </div>
-        </div>
-    </script>
-
-    <script type="text/x-handlebars" data-template-name="index">
-        <div class="restaurant-list">
-            {{#each}}
-            <div class="row">
-                <div class="large-12 columns">
-                    <div class="callout panel">
-                        <p><strong>{{name}}</strong>{{#if tagline}}<br/>{{/if}}{{tagline}}</p>
-                        <div class="row">
-                            <div class="large-3 medium-6 small-12 columns">
-                                <p>Price: {{showPrice price}}</p>
-                            </div>
-                            <div class="large-3 medium-6 small-12 columns">
-                                <p>Rating: {{showRating rating}}</p>
-                            </div>
-                            <div class="large-6 medium-12 small-12 columns">
-                                <p>Address: {{address}}</p>
-                            </div>
-                        </div>
-                        <p>Description: {{description}} </p>
-                        {{#link-to 'restaurant' this class="button restaurantRow white"}}ShowTimes{{/link-to}}
-                    </div>
-                </div>
-            </div>
-            {{/each}}
-        </div>
-    </script>
-
-    <script type="text/x-handlebars" data-template-name="restaurant">
-        <div class="row">
-            <div class="large-12 columns">
-                <div class="callout panel">
-                    <p><strong>{{name}}</strong>{{#if tagline}}<br/>{{/if}}{{tagline}}</p>
-                    <div class="row">
-                        <div class="large-3 medium-6 small-12 columns">
-                            <p>Price: {{showPrice price}}</p>
-                        </div>
-                        <div class="large-3 medium-6 small-12 columns">
-                            <p>Rating: {{showRating rating}}</p>
-                        </div>
-                        <div class="large-6 medium-12 small-12 columns">
-                            <p>Address: {{address}}</p>
-                        </div>
-                    </div>
-                    <p>Description: {{description}} </p>
-                    <div class="availableTimes">
-                        <form>
-                            <fieldset>
-                                <legend>Available Times</legend>
-                                <div class="row">
-                                    {{#each availableTimes}}
-                                    <div class="large-3 medium-4 small-6 columns availableTime">
-                                        {{#link-to 'reservationForm' this}}{{showTime this}}{{/link-to}}
-                                    </div>
-                                    {{/each}}
-                                </div>
-                            </fieldset>
-                        </form>
-                    </div>
-                    <div class="reservationForm">{{outlet}}</div>
-                </div>
-            </div>
-        </div>
-    </script>
-
-    <script type="text/x-handlebars" data-template-name="reservationForm">
-        <div class="row">
-            <div class="large-12 columns">
-                <div class="panel">
-                    <h5>The reservation form:</h5>
-                    <form>
-                        <div class="row">
-                            <div class="large-6 columns">
-                                <h5><label>Selected Time:</label>{{showTime time}}</h5>
-                            </div>
-                            <div class="large-6 columns">
-                                <label>Number of Guests</label>
-                                {{input type="number" name="guests" placeholder="#" value=guests}}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="large-12 columns">
-                                <label>Name:</label>
-                                {{input type="text" name="name" placeholder="Enter your full name" value=name}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="large-6 medium-6 columns">
-                                <label>Phone:</label>
-                                {{input type="text" name="phone" placeholder="###-###-####" value=phone}}
-                            </div>
-                            <div class="large-6 medium-6 columns">
-                                <label>Email:</label>
-                                {{input type="text" name="email" placeholder="user@domain.ext" value=email}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="large-8 medium-8 columns">
-                                <label>Seating:</label>
-                                <input type="radio" name="location" id="noPreference"><label for="noPreference">No Preference</label>
-                                <input type="radio" name="location" id="outside"><label for="outside">Outside</label>
-                                <input type="radio" name="location" id="inside"><label for="inside">Inside</label>
-                            </div>
-                            <div class="large-4 medium-4 columns">
-                                <label>Other Info:</label>
-                                {{input name="isSpecialOccasion" id="specialOccasion" type="checkbox"}}<label for="specialOccasion">Special Occasion</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="large-12 columns">
-                                <label>Special Requests:</label>
-                                {{textarea name="specialRequests" placeholder="Enter any special requests here."}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="small-12 medium-12 large-12 small-centered columns">
-                                <button class="small radius button submitButton" {{action "submit" this on="click"}}>Make Reservation</button>
-                                <button class="small radius secondary button cancelButton" {{action "cancel" this on="click"}}>Cancel</button>
-                            </div>
-                        </div>
-                    </form>
-                    <div class="error-box" style="display:none;">
-                        <ul class="error-list"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </script>
-
-    <script type='text/x-handlebars' data-template-name='reservation'>
-        <div class="row">
-            <div class="large-12 columns">
-                <div class="callout panel">
-                    <div class="row">
-                        <h4>Reservation successfully created for:</h4>
-                        <p><strong>{{controllers.restaurant.name}}</strong></p>
-                        <div class="large-6 medium-12 small-12 columns" style="margin-bottom:15px;">
-                            <label>Name: </label><span>{{ name }}</span>
-                        </div>
-                        <div class="large-6 medium-12 small-12 columns" style="margin-bottom:15px;">
-                            <label>Phone Number: </label><span>{{ phone }}</span>
-                        </div>
-                        <div class="large-6 medium-12 small-12 columns" style="margin-bottom:15px;">
-                            <label># of Guests: </label><span>{{ guests }}</span>
-                        </div>
-                        <div class="large-6 medium-12 small-12 columns" style="margin-bottom:15px;">
-                            <label>Time: </label><span>{{showTime time }}</span>
-                        </div>
-                    </div>
-                    <button class="reset" {{ action "reset" this on="click" }}>Return to Restaurant List</button>
+                    <p>This is but one example with Ember, there is so much more possible!</p>
+                    <a href="http://emberjs.com/guides/" target="blank" class="small button">Go to Ember.js Guides</a>
                 </div>
             </div>
         </div>
