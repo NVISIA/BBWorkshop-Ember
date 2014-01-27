@@ -1,8 +1,8 @@
-EmberWorkshop
+KendoWorkshop
 ================
 
-Ember.js Workshop
-The Ember.js Workshop is intended to be released under the MIT license.
+Kendo-UI Workshop
+The Kendo-UI Workshop is intended to be released under the MIT license.
 
 The MIT License (MIT)
 
