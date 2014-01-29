@@ -176,7 +176,7 @@ if (opts.secure === true) {
     http.createServer(function(req, res) {
         // redirect to secure server
         var url = 'https://' + req.headers.host.split(':')[0] + ':' + securePort + req.url;
-        res.writeHead(301, {
+        res.writeHead(307, {
             Location: url
         });
         res.end();

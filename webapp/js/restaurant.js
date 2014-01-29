@@ -51,8 +51,11 @@
         afterModel: function(restaurant) {
             $.ajax('/restaurants/' + restaurant.get('_id') + '/reservations', {
                 success: function(response) {
-                    restaurant.set('reservations', response.reservations);
-                    restaurant.set('availableTimes', response.available);
+                    // this ember.run is required for testing - Yes... really...
+                    Ember.run(function() {
+                        restaurant.set('reservations', response.reservations);
+                        restaurant.set('availableTimes', response.available);
+                    });
                 }
             });
         }

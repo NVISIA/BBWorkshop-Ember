@@ -10,7 +10,7 @@ sudo npm install
 node node_modules/grunt-cli/bin/grunt
 
 # startup the node server
-# node server/server --port 9000
+node server/server --port 9000
 
 # Use this command instead to run in secure mode
-node server/server --port 9000 -s
+# node server/server --port 9000 -s
