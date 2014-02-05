@@ -1,8 +1,8 @@
-KendoWorkshop
+EmberWorkshop
 ================
 
-Kendo-UI Workshop
-The Kendo-UI Workshop is intended to be released under the MIT license.
+Ember Workshop
+The Ember Workshop is intended to be released under the MIT license.
 
 The MIT License (MIT)
 
