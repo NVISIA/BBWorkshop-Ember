@@ -7,6 +7,6 @@
         "handlebars": "1.3.0",
         "grunt-cli": "0.1.13",
         "grunt-ember-templates": "0.4.18",
-        "workshop-server": "https://github.com/gitter1226/workshop-server/tarball/1.0"
+        "workshop-server": "https://github.com/NVISIA/WorkshopServer/tarball/1.0"
     }
 }
