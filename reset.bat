@@ -1,4 +1,4 @@
 echo off
 call npm install
-call node server/bootstrap
+call node node_modules/workshop-server/modules/bootstrap
 

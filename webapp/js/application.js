@@ -55,6 +55,6 @@
     Application.ApplicationSerializer = DS.JSONSerializer.extend({
         serializeIntoHash: function(hash, type, record, options) {
             _.extend(hash, this.serialize(record, options));
-        },
+        }
     });
 })();

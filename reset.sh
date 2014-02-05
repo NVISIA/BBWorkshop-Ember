@@ -1,3 +1,3 @@
 #!/bin/bash
 sudo npm install
-node server/bootstrap
+node node_modules/workshop-server/modules/bootstrap
